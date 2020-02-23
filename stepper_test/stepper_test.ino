@@ -13,7 +13,8 @@ Motor motors[NUM_MOTORS];
 // int numberOfSteps = 100;
 byte ledPin = LED_BUILTIN;
 int pulseWidthMicros = 20;  // microseconds
-int millisbetweenSteps = 10; // milliseconds
+int microsbetweensteps = 1200;
+//int millisbetweenSteps = 3; // milliseconds
 
 void step(Motor m, int dir, int steps) {
   // Turn on the LED while stepping
@@ -25,8 +26,9 @@ void step(Motor m, int dir, int steps) {
     digitalWrite(m.steppin, HIGH);
     delayMicroseconds(pulseWidthMicros);
     digitalWrite(m.steppin, LOW);
-   
-    delay(millisbetweenSteps);
+
+    delayMicroseconds(microsbetweensteps);
+//    delay(millisbetweenSteps);
   }
  
   digitalWrite(ledPin, LOW);
