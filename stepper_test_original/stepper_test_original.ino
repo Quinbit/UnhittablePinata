@@ -2,8 +2,8 @@
 // on an Uno the onboard led will flash with each step
 // as posted on Arduino Forum at http://forum.arduino.cc/index.php?topic=208905.0
 
-byte directionPin = 2;
-byte stepPin = 4;
+byte directionPin = 12;
+byte stepPin = 13;
 int numberOfSteps = 100;
 byte ledPin = 13;
 int pulseWidthMicros = 10;  // microseconds
@@ -16,6 +16,10 @@ void setup()
   Serial.begin(9600);
   Serial.println("Starting StepperTest");
   digitalWrite(ledPin, LOW);
+
+  // B/c Anna says so
+  pinMode(7, OUTPUT);
+  digitalWrite(7, HIGH);
  
   delay(2000);
 
