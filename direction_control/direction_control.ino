@@ -116,10 +116,10 @@ void setup()
   motors[1].unwind_dir = WIND;
 
   // motor config
-  motors[0].steprange = 200;
-  motors[0].stepsep = 1500;
+  motors[0].steprange = 120;
+  motors[0].stepsep = 2000;
   motors[1].steprange = 260;
-  motors[1].stepsep = 1200;
+  motors[1].stepsep = 1500;
   
   Serial.begin(9600);
   Serial.println("Starting StepperTest");
