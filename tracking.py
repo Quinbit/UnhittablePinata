@@ -21,60 +21,6 @@ calibration_delta_max = np.array([20,20,20])
 min_size = 0
 countdown = 3
 
-# def non_max_suppression_fast(boxes, overlapThresh):
-# 	# if there are no boxes, return an empty list
-#     if len(boxes) == 0:
-#         return []
-# 	# if the bounding boxes integers, convert them to floats --
-# 	# this is important since we'll be doing a bunch of divisions
-#     if boxes.dtype.kind == "i":
-#         boxes = boxes.astype("float")
-# 	# initialize the list of picked indexes	
-#     pick = []
-# 	# grab the coordinates of the bounding boxes
-#     x1 = boxes[:,0]
-#     y1 = boxes[:,1]
-#     x2 = boxes[:,2]
-#     y2 = boxes[:,3]
-# 	# compute the area of the bounding boxes and sort the bounding
-# 	# boxes by the bottom-right y-coordinate of the bounding box
-#     area = (x2 - x1 + 1) * (y2 - y1 + 1)
-#     idxs = np.argsort(y2)
-# 	# keep looping while some indexes still remain in the indexes
-# 	# list
-#     while len(idxs) > 0:
-# 		# grab the last index in the indexes list and add the
-# 		# index value to the list of picked indexes
-#         last = len(idxs) - 1
-#         i = idxs[last]
-#         pick.append(i)
-# 		# find the largest (x, y) coordinates for the start of
-# 		# the bounding box and the smallest (x, y) coordinates
-# 		# for the end of the bounding box
-#         xx1 = np.maximum(x1[i], x1[idxs[:last]])
-#         yy1 = np.maximum(y1[i], y1[idxs[:last]])
-#         xx2 = np.minimum(x2[i], x2[idxs[:last]])
-#         yy2 = np.minimum(y2[i], y2[idxs[:last]])
-# 		# compute the width and height of the bounding box
-#         w = np.maximum(0, np.abs(xx2 - xx1) + 1)
-#         h = np.maximum(0, np.abs(yy2 - yy1) + 1)
-# 		# compute the ratio of overlap
-#         overlap = (w * h) / area[idxs[:last]]
-# 		# delete all indexes from the index list that have
-#         idxs = np.delete(idxs, np.concatenate(([last],
-#             np.where(overlap > overlapThresh)[0])))
-# 	# return only the bounding boxes that were picked using the
-# 	# integer data type
-
-#     for p in range(len(pick)-1,-1,-1):
-#         x1 = boxes[pick[p],0]
-#         y1 = boxes[pick[p],1]
-#         x2 = boxes[pick[p],2]
-#         y2 = boxes[pick[p],3]
-#         if (x2 - x1) * (y2 - y1) < min_size:
-#             del pick[p]
-#     return boxes[pick].astype("int")
-
 def draw_center(img, color=(255,12,12)):
     center_x = img.shape[1] // 2
     center_y = img.shape[0] // 2
@@ -116,10 +62,23 @@ upper = None
 lower = None
 means = []
 background = None
+prev = None
 
 while(True):
     # Capture frame-by-frame
     ret, frame = cap.read()
+
+    if prev is None:
+        prev = frame
+    else:
+        diff = cv2.absdiff(frame, prev)
+        prev = frame
+        mask2 = cv2.threshold(diff, 25, 255, cv2.THRESH_BINARY)[1]
+        cv2.imshow('frame',mask2)
+
+        if abs(mask2.mean()) > 10:
+            print("SWING {}".format(time()))
+
     # ret, frame0 = cap0.read()
     # frame = np.concatenate((frame, frame), 1)
     img = frame.copy()
@@ -158,8 +117,8 @@ while(True):
         mask2 = cv2.threshold(diff, 25, 255, cv2.THRESH_BINARY)[1]
         # import ipdb; ipdb.set_trace()
         mask = cv2.bitwise_and(mask, mask2[:,:,0])
-        cv2.erode(mask, None, iterations=4)
-        cv2.dilate(mask, None, iterations=6)
+        cv2.erode(mask, None, iterations=8)
+        cv2.dilate(mask, None, iterations=10)
 
         x, y = np.nonzero(mask)
 
@@ -167,7 +126,7 @@ while(True):
             A = vstack([x,ones(len(x))]).T
             m, c = lstsq(A, y)[0]
 
-            print(m)
+            # print(m)
 
             w = img.shape[0]
             h = img.shape[1]
@@ -209,7 +168,7 @@ while(True):
 
             img = cv2.circle(img, p1, 2, color=(255,0,0))
             img = cv2.circle(img, p2, 2, color=(255,0,0))
-            print(p1, p2)
+            # print(p1, p2)
 
             img = cv2.circle(img, (center_x, center_y), radius, color=(0,0,255))
             point = (int(center_x + np.sin(angle) * radius), int(center_y + np.cos(angle) * radius))
