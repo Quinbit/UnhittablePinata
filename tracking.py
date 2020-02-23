@@ -6,9 +6,17 @@ import math
 from numpy.linalg import lstsq
 from numpy import ones,vstack
 from sklearn.linear_model import LinearRegression
+import serial
 
-cap = cv2.VideoCapture(2)
-cap0 = cv2.VideoCapture(0)
+test = True
+
+if not test:
+    port = '/dev/ttyACM0'
+
+    ard = serial.Serial(port,9600,timeout=5)
+
+# cap = cv2.VideoCapture(2)
+cap = cv2.VideoCapture(0)
 
 # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
 # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
@@ -65,6 +73,7 @@ background = None
 prev = None
 past_angles = []
 past_timesteps = 10
+last_write = time()
 
 while(True):
     # Capture frame-by-frame
@@ -78,11 +87,16 @@ while(True):
         mask2 = cv2.threshold(diff, 25, 255, cv2.THRESH_BINARY)[1]
         cv2.imshow('frame',mask2)
 
-        if abs(mask2.mean()) > 10:
+        if abs(mask2.mean()) > 5:
             if len(past_angles) > 0:
-                print("SWING {}".format(past_angles[0]))
-                #Serial print
-                del past_angles[-1]
+                if (time() - last_write > 5):
+                    last_write = time()
+                    deg = int((past_angles[0] + math.pi) / math.pi * 180)
+                    print("SWING {}".format(deg))
+                    if not test:
+                        ard.write(str.encode(str(deg) + '\n'))
+                    #Serial print
+                    del past_angles[-1]
 
     # ret, frame0 = cap0.read()
     # frame = np.concatenate((frame, frame), 1)
@@ -136,10 +150,13 @@ while(True):
             w = img.shape[0]
             h = img.shape[1]
 
-            intersection_t = (0, int(-c / m))
-            intersection_b = (int(h), int((h - c) / m))
-            intersection_r = (int(c), 0)
-            intersection_l = (int(w * m + c), int(w))
+            try:
+                intersection_t = (0, int(-c / m))
+                intersection_b = (int(h), int((h - c) / m))
+                intersection_r = (int(c), 0)
+                intersection_l = (int(w * m + c), int(w))
+            except:
+                continue
 
             points = []
 
@@ -192,6 +209,8 @@ while(True):
     elif cv2.waitKey(1) & 0xFF == ord('c'):
         means = []
         start_time = time()
+    elif cv2.waitKey(1) & 0xFF == ord('s'):
+        prev = np.zeros(prev.shape)
 
 # When everything done, release the capture
 cap.release()
