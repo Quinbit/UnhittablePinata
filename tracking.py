@@ -63,6 +63,8 @@ lower = None
 means = []
 background = None
 prev = None
+past_angles = []
+past_timesteps = 10
 
 while(True):
     # Capture frame-by-frame
@@ -77,7 +79,10 @@ while(True):
         cv2.imshow('frame',mask2)
 
         if abs(mask2.mean()) > 10:
-            print("SWING {}".format(time()))
+            if len(past_angles) > 0:
+                print("SWING {}".format(past_angles[0]))
+                #Serial print
+                del past_angles[-1]
 
     # ret, frame0 = cap0.read()
     # frame = np.concatenate((frame, frame), 1)
@@ -163,6 +168,11 @@ while(True):
             if p1 is None:
                 continue
             angle = get_angle(*p1, *p2, center_y, center_x)
+
+            past_angles.append(angle)
+            if len(past_angles) > past_timesteps:
+                del past_angles[0]
+
             p1 = (int(p1[0]), int(p1[1]))
             p2 = (int(p2[0]), int(p2[1]))
 
