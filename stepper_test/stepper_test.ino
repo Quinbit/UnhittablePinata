@@ -13,7 +13,7 @@ Motor motors[NUM_MOTORS];
 // int numberOfSteps = 100;
 byte ledPin = LED_BUILTIN;
 int pulseWidthMicros = 20;  // microseconds
-int millisbetweenSteps = 10; // milliseconds
+int millisbetweenSteps = 3; // milliseconds
 
 void step(Motor m, int dir, int steps) {
   // Turn on the LED while stepping
