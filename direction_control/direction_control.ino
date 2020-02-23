@@ -16,32 +16,29 @@ Motor motors[NUM_MOTORS];
 byte ledPin = LED_BUILTIN;
 int pulseWidthMicros = 20;  // microseconds
 
-void step(Motor m, int steps) {
-  // Turn on the LED while stepping
-  digitalWrite(ledPin, HIGH);
-
-  if (steps < 0) {
-    steps = -steps;
-    digitalWrite(m.dirpin, m.unwind_dir);
-  } else {
-    digitalWrite(m.dirpin, m.wind_dir);
-  }
-  
-  for(int n = 0; n < steps; n++) {
-    digitalWrite(m.steppin, HIGH);
-    delayMicroseconds(pulseWidthMicros);
-    digitalWrite(m.steppin, LOW);
-   
-    delayMicroseconds(m.stepsep);
-  }
- 
-  digitalWrite(ledPin, LOW);
-}
+//void step(Motor m, int steps) {
+//  // Turn on the LED while stepping
+//  digitalWrite(ledPin, HIGH);
+//
+//  if (steps < 0) {
+//    steps = -steps;
+//    digitalWrite(m.dirpin, m.unwind_dir);
+//  } else {
+//    digitalWrite(m.dirpin, m.wind_dir);
+//  }
+//  
+//  for(int n = 0; n < steps; n++) {
+//    digitalWrite(m.steppin, HIGH);
+//    delayMicroseconds(pulseWidthMicros);
+//    digitalWrite(m.steppin, LOW);
+//   
+//    delayMicroseconds(m.stepsep);
+//  }
+// 
+//  digitalWrite(ledPin, LOW);
+//}
 
 void stepBoth(int leftSteps, int rightSteps, bool slow) {
-  // Turn on the LED while stepping
-  digitalWrite(ledPin, HIGH);
-
   if (leftSteps < 0) {
     leftSteps = -leftSteps;
     digitalWrite(motors[0].dirpin, motors[0].unwind_dir);
@@ -57,7 +54,7 @@ void stepBoth(int leftSteps, int rightSteps, bool slow) {
   }
 
   int leftStepsep = !slow ? motors[0].stepsep / 100 : 200;
-  int rightStepsep = !slow ? motors[1].stepsep / 100 : 200;
+  int rightStepsep = !  slow ? motors[1].stepsep / 100 : 200;
   int leftTotal = leftSteps*leftStepsep;
   int rightTotal = rightSteps*rightStepsep;
   
@@ -74,24 +71,24 @@ void stepBoth(int leftSteps, int rightSteps, bool slow) {
     }
    
     delayMicroseconds(100);
-  }
- 
-  digitalWrite(ledPin, LOW);
+  } 
 }
 
 void dodgeAngle(int angle) {
+  digitalWrite(ledPin, HIGH);
+  
   // rotate angle frame by 45 degrees
   angle += 45;
   if (angle >= 360) {
     angle -= 360;
   }
 
-  double sintheta = sin(angle * (PI / 180.0));
-  double costheta = cos(angle * (PI / 180.0));
+  double sintheta = -sin(angle * (PI / 180.0));
+  double costheta = -cos(angle * (PI / 180.0));
   
   // calculate motor offsets
-  double left = sintheta * motors[0].steprange / 2;
-  double right = costheta * motors[1].steprange / 2;
+  double left = costheta * motors[0].steprange / 2;
+  double right = sintheta * motors[1].steprange / 2;
 
   stepBoth(left, right, false);
 //  step(motors[0], left);
@@ -100,6 +97,8 @@ void dodgeAngle(int angle) {
   delay(2000);
 
   stepBoth(-left, -right, true);
+
+  digitalWrite(ledPin, LOW);
 //
 //  step(motors[0], -left);
 //  step(motors[1], -right);
